@@ -571,6 +571,7 @@ class Terrain:
         else:
             self.randomized_terrain()   
         self.heightsamples = self.height_field_raw
+        # WILL: below line might be important, if we can replace the heightfield with another thing that can make meshes. Then, just output those vertices and triangles
         self.vertices, self.triangles = convert_heightfield_to_trimesh(self.height_field_raw, self.horizontal_scale, self.vertical_scale, cfg["slopeTreshold"])
     
     def randomized_terrain(self):
@@ -590,6 +591,7 @@ class Terrain:
                               vertical_scale=self.vertical_scale,
                               horizontal_scale=self.horizontal_scale)
             choice = np.random.uniform(0, 1)
+
             if choice < 0.1:
                 if np.random.choice([0, 1]):
                     pyramid_sloped_terrain(terrain, np.random.choice([-0.3, -0.2, 0, 0.2, 0.3]))
@@ -632,23 +634,25 @@ class Terrain:
                 step_height = 0.05 + 0.175 * difficulty
                 discrete_obstacles_height = 0.025 + difficulty * 0.15
                 stepping_stones_size = 2 - 1.8 * difficulty
-                if choice < self.proportions[0]:
-                    if choice < 0.05:
-                        slope *= -1
-                    pyramid_sloped_terrain(terrain, slope=slope, platform_size=3.)
-                elif choice < self.proportions[1]:
-                    if choice < 0.15:
-                        slope *= -1
-                    pyramid_sloped_terrain(terrain, slope=slope, platform_size=3.)
-                    random_uniform_terrain(terrain, min_height=-0.1, max_height=0.1, step=0.025, downsampled_scale=0.2)
-                elif choice < self.proportions[3]:
-                    if choice<self.proportions[2]:
-                        step_height *= -1
-                    pyramid_stairs_terrain(terrain, step_width=0.31, step_height=step_height, platform_size=3.)
-                elif choice < self.proportions[4]:
-                    discrete_obstacles_terrain(terrain, discrete_obstacles_height, 1., 2., 40, platform_size=3.)
-                else:
-                    stepping_stones_terrain(terrain, stone_size=stepping_stones_size, stone_distance=0.1, max_height=0., platform_size=3.)
+                # WILL: creates a height field that the task[i][j] will follow. i gives the level, and j gives the repetition of the level.
+                discrete_obstacles_terrain(terrain, max_height=2, min_size=2., max_size=10., num_rects=300, platform_size=3.) # WILL
+                # if choice < self.proportions[0]:
+                #     if choice < 0.05:
+                #         slope *= -1
+                #     pyramid_sloped_terrain(terrain, slope=slope, platform_size=3.)
+                # elif choice < self.proportions[1]:
+                #     if choice < 0.15:
+                #         slope *= -1
+                #     pyramid_sloped_terrain(terrain, slope=slope, platform_size=3.)
+                #     random_uniform_terrain(terrain, min_height=-0.1, max_height=0.1, step=0.025, downsampled_scale=0.2)
+                # elif choice < self.proportions[3]:
+                #     if choice<self.proportions[2]:
+                #         step_height *= -1
+                #     pyramid_stairs_terrain(terrain, step_width=0.31, step_height=step_height, platform_size=3.)
+                # elif choice < self.proportions[4]:
+                #     discrete_obstacles_terrain(terrain, discrete_obstacles_height, 1., 2., 40, platform_size=3.)
+                # else:
+                #     stepping_stones_terrain(terrain, stone_size=stepping_stones_size, stone_distance=0.1, max_height=0., platform_size=3.)
 
                 # Heightfield coordinate system
                 start_x = self.border + i * self.length_per_env_pixels
